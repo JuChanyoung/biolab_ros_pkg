@@ -1,0 +1,16 @@
+<package>
+  <description brief="brl_teleop_msgs">
+
+     brl_teleop_msgs
+
+  </description>
+  <author>haquang</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/brl_teleop_msgs</url>
+  <depend package="rosmsg"/>
+  <depend package="std_msgs"/>
+
+</package>
+
+

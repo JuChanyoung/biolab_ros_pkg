@@ -1,0 +1,8 @@
+<launch>
+	<node name="master_delay" pkg="brl_teleop_delay" type="delay" output="screen">
+		<param name="time_delay" value="1"	/>
+		<param name="subscriber_src_name" value="/master_controller"	/>
+		<param name="subscriber_topic_name" value="/velocity"	/>
+		<param name="publisher_topic_name" value="velocity"	/>
+	</node>
+</launch>

@@ -1,0 +1,22 @@
+<package>
+<description brief="MobileRobots' Advanced Robot Interface for Applications (ARIA) C++ library">
+
+This package contains MobileRobots' ARIA C++ library (software development toolkit or SDK)
+for all MobileRobots' ActivMedia platforms.
+ARIA can dynamically control your robot's velocity, heading, relative heading and
+other motion parameters either through simple low-level commands or
+through its high-level Actions infrastructure.
+ARIA also receives odometric position estimates, sonar readings and
+all other current operating data sent by the robot platform.
+
+</description>
+<author>Maintained by Srećko Jurić-Kavelj</author>
+<license>BSD</license>
+<review status="3rdparty doc reviewed" notes=""/>
+<url>http://www.ros.org/wiki/Aria</url>
+<export>
+  <cpp lflags="-Wl,-rpath,${prefix}/Aria/lib -L${prefix}/Aria/lib -lAria -lpthread -ldl -lrt" cflags="-fPIC -I${prefix}/Aria/include"/>
+   <doxymaker external="http://robots.mobilerobots.com/wiki/ARIA"/>
+</export>
+</package>
+

@@ -1,0 +1,8 @@
+syntax: glob
+**bin/*
+**build/*
+**msg_gen/*
+Aria/Aria/*
+Aria/installed
+Aria/wiped
+ROSARIA/src/ROSARIA/*

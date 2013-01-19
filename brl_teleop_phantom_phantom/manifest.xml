@@ -1,0 +1,19 @@
+<package>
+  <description brief="brl_teleop_phantom_phantom">
+
+     brl_teleop_phantom_phantom
+
+  </description>
+  <author>haquang</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/brl_teleop_phantom_phantom</url>
+  <depend package="roscpp"/>
+  <depend package="brl_teleop_msgs"/>
+  <depend package="brl_teleop_phantom"/>
+  <depend package="brl_teleop_controller_tdpn"/>
+  <depend package="brl_teleop_delay"/>
+
+</package>
+
+

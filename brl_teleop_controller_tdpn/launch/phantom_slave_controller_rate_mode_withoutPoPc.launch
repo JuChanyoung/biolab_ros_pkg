@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<launch>
+	<node name="slave_controller" pkg="brl_teleop_controller_tdpn" type="phantom_controller" output="screen">
+		<param name="rate_mote" value="true"	/>
+		<param name="rate_scale" value="0.01"	/>
+		<param name="popc_enable" value="false"	/>
+
+		<param name="design_velocity_src_name" value="/master_delay" />
+    <param name="design_velocity_topic_name" value="velocity" />
+
+		<param name="actual_velocity_src_name" value="/phantom_slave" />
+    <param name="actual_velocity_topic_name" value="velocity" />
+		
+		<rosparam param="gains">{'P': 0.1, 'I': 0.0, 'D': 1}</rosparam>
+
+	</node>
+</launch>

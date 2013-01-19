@@ -1,0 +1,16 @@
+<package>
+  <description brief="brl_teleop_delay">
+
+     brl_teleop_delay
+
+  </description>
+  <author>haquang</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/brl_teleop_delay</url>
+  <depend package="roscpp"/>
+  <depend package="brl_teleop_msgs"/>
+
+</package>
+
+

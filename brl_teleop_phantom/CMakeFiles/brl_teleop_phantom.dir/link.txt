@@ -1,0 +1,1 @@
+/usr/bin/c++   -O2 -g     -pthread CMakeFiles/brl_teleop_phantom.dir/src/brl_teleop_phantom.o  -o bin/brl_teleop_phantom -rdynamic -L/opt/ros/fuerte/lib -lroscpp -lrostime -lrosconsole -lroscpp_serialization -lxmlrpcpp -lHDU -lHD -lrt -lncurses -Wl,-rpath,/opt/ros/fuerte/lib 

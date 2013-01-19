@@ -1,0 +1,11 @@
+--- Makefile	2010-01-07 16:30:48.000000000 +0100
++++ Makefile	2010-04-22 09:24:56.000000000 +0200
+@@ -588,7 +588,7 @@
+ 
+ 
+ ifndef INSTALL_DIR
+-INSTALL_DIR=/usr/local/Aria
++INSTALL_DIR=$(shell rospack find Aria)/Aria
+ endif
+ 
+ ifndef SYSTEM_ETC_DIR

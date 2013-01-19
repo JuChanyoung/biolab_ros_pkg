@@ -1,0 +1,16 @@
+/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles/ROSBUILD_genmsg_cpp.dir
+/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles/ROSBUILD_genmsg_lisp.dir
+/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles/ROSBUILD_gensrv_cpp.dir
+/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles/ROSBUILD_gensrv_lisp.dir
+/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles/clean-test-results.dir
+/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles/phantom_controller.dir
+/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles/rosbuild_precompile.dir
+/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles/rosbuild_premsgsrvgen.dir
+/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles/rospack_genmsg.dir
+/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles/rospack_genmsg_libexe.dir
+/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles/rospack_gensrv.dir
+/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles/test.dir
+/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles/test-future.dir
+/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles/test-results.dir
+/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles/test-results-run.dir
+/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles/tests.dir

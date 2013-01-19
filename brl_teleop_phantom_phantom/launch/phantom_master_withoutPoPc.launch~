@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+	<include file="$(find brl_teleop_phantom)/launch/phantom_master.launch" />
+	<include file="$(find brl_teleop_controller_tdpn)/launch/phantom_master_controller_withoutPoPc.launch" />
+	<include file="$(find brl_teleop_delay)/launch/phantom_master.launch" />
+</launch>
