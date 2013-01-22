@@ -5,25 +5,72 @@ load('mst.txt');
 load('slv.txt');
 
 
-mstEp = mst(:,1);
-mstEn = mst(:,2);
+mst_refX = mst(:,1);
+mst_outX = mst(:,2);
 
-slvEp = slv(:,1);
-slvEn = slv(:,2);
+slv_refX = slv(:,1);
+slv_outX = slv(:,2);
+
+
+mst_refY = mst(:,1);
+mst_outY = mst(:,2);
+
+slv_refY = slv(:,1);
+slv_outY = slv(:,2);
+
+
+mst_refZ = mst(:,1);
+mst_outZ = mst(:,2);
+
+slv_refZ = slv(:,1);
+slv_outZ = slv(:,2);
 
 figure(1);
-subplot(2,1,1);
-plot(mstEp,'r');
+subplot(2,3,1);
+plot(mst_refX,'r');
 hold on;
-plot(-mstEn,'b');
+plot(-mst_outX,'b');
 grid;
-legend('Ep','En');
+legend('Refef','Out');
 title('Master');
 
-subplot(2,1,2);
-plot(slvEp,'r');
+subplot(2,3,2);
+plot(slv_refX,'r');
 hold on;
-plot(-slvEn,'b');
+plot(-slv_outX,'b');
 grid;
-legend('Ep','En');
+legend('Ref','Out');
 title('Slave');
+
+
+subplot(2,3,3);
+plot(mst_refY,'r');
+hold on;
+plot(-mst_outY,'b');
+subplot(2,3,1);
+plot(mst_refY,'r');
+hold on;
+plot(-mst_outY,'b');
+grid;
+legend('Refef','Out');
+title('Master');
+
+subplot(2,3,4);
+plot(slv_refZ,'r');
+hold on;
+plot(-slv_outZ,'b');
+grid;
+legend('Ref','Out');
+title('Slave');
+grid;
+legend('Refef','Out');
+title('Master');
+
+subplot(2,3,5);
+plot(slv_refZ,'r');
+hold on;
+plot(-slv_outZ,'b');
+grid;
+legend('Ref','Out');
+title('Slave');
+

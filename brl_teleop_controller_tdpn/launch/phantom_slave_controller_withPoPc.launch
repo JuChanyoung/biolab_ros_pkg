@@ -4,7 +4,7 @@
 		<param name="rate_mote" value="false"	/>
 		<param name="popc_enable" value="true"	/>
 
-		<param name="design_velocity_src_name" value="/master_delay" />
+		<param name="design_velocity_src_name" value="/velocity_command_delay" />
     <param name="design_velocity_topic_name" value="velocity" />
 
 		<param name="actual_velocity_src_name" value="/phantom_slave" />

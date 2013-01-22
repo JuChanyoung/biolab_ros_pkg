@@ -2,15 +2,15 @@
 <launch>
 	<node name="master_controller" pkg="brl_teleop_controller_tdpn" type="phantom_controller" output="screen">
 		<param name="rate_mode" value="true"	/>
-		<param name="rate_scale" value="0.01"	/>
+		<param name="rate_scale" value="0.0005"	/>
 		<param name="master" value="true"	/>
 		<param name="popc_enable" value="true"	/>
 
-		<param name="feedback_force_src_name" value="/slave_delay" />
-    <param name="feedback_force_topic_name" value="force_control" />
+		<param name="feedback_force_src_name" value="/force_feedback_delay" />
+    	<param name="feedback_force_topic_name" value="force_control" />
 
 		<param name="actual_velocity_src_name" value="/phantom_master" />
-    <param name="actual_velocity_topic_name" value="velocity" />
+    	<param name="actual_velocity_topic_name" value="velocity" />
 
 	</node>
 </launch>

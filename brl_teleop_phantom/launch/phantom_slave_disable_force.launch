@@ -1,0 +1,7 @@
+<launch>
+	<node name="phantom_slave" pkg="brl_teleop_phantom" type="brl_teleop_phantom" output="screen">
+		<param name="force_src_name" value="/slave_controller" />
+    <param name="force_topic_name" value="force_control_slv" />
+		<param name="disable_force" value="true"	/>
+	</node>
+</launch>

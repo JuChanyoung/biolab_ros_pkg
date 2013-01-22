@@ -5,7 +5,7 @@
 		<param name="master" value="true"	/>
 		<param name="popc_enable" value="true"	/>
 
-		<param name="feedback_force_src_name" value="/slave_delay" />
+		<param name="feedback_force_src_name" value="/force_feedback_delay" />
     <param name="feedback_force_topic_name" value="force_control" />
 
 		<param name="actual_velocity_src_name" value="/phantom_master" />

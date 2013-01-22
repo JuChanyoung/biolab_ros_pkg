@@ -1,0 +1,8 @@
+<launch>
+	<node name="force_feedback_delay" pkg="brl_teleop_delay" type="delay" output="screen">
+		<param name="time_delay" value="100"	/>
+		<param name="subscriber_src_name" value="/slave_controller"	/>
+		<param name="subscriber_topic_name" value="/force_control"	/>
+		<param name="publisher_topic_name" value="force_control"	/>
+	</node>
+</launch>

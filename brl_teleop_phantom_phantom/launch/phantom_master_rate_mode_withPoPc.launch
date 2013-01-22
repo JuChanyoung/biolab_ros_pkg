@@ -2,5 +2,6 @@
 <launch>
 	<include file="$(find brl_teleop_phantom)/launch/phantom_master.launch" />
 	<include file="$(find brl_teleop_controller_tdpn)/launch/phantom_master_controller_rate_mode_withPoPc.launch" />
-	<include file="$(find brl_teleop_delay)/launch/master_delay.launch" />
+	<include file="$(find brl_teleop_delay)/launch/velocity_command_delay.launch" />
+	<include file="$(find brl_teleop_delay)/launch/position_command_delay.launch" />
 </launch>

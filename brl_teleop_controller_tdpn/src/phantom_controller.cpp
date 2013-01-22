@@ -49,6 +49,7 @@ public:
 	bool popc_enable_;
 	hduVector3Dd velocity_design_;				//	Design Velocity
 	hduVector3Dd position_design_;				//	Design Position
+	hduVector3Dd master_velocity_;				//	For rate mode
 	hduVector3Dd energy_input_;					//  Input energy _ corresponding with design velocity/force
 	hduVector3Dd energy_output_;				//  Output energy _ to be sent
 	hduVector3Dd energy_reference_;				//	Reference energy
@@ -67,8 +68,11 @@ public:
 
 	ros::NodeHandlePtr node_;
 
-	std::string design_velocity_src_name_;    	//  Source for subscribing
-	std::string design_velocity_topic_name_;	//	Topic for subscribing
+	std::string design_velocity_src_name_;    	//  Source for subscribing design velocity
+	std::string design_velocity_topic_name_;	//	Topic for subscribing design velocity
+
+	std::string position_src_name_;    	//  Source for subscribing master velocity
+	std::string position_topic_name_;	//	Topic for subscribing master velocity
 
 	std::string actual_velocity_src_name_;
 	std::string actual_velocity_topic_name_;
@@ -76,14 +80,16 @@ public:
 	std::string feedback_force_src_name_; 	   	//  Source for subscribing
 	std::string feedback_force_topic_name_;		//	Topic for subscribing
 
-	ros::Subscriber design_velocity_sub_;
+	ros::Subscriber design_velocity_sub_;		
+	ros::Subscriber master_velocity_sub_;		//	use for rate mode
 	ros::Subscriber actual_velocity_sub_;
 	ros::Subscriber force_sub_;
 
 	ros::Publisher 	force_feedback_pub_;
 	ros::Publisher 	force_ctrl_pub_;
 	ros::Publisher 	force_ctrl_slv_pub_;
-	ros::Publisher pack_pub;
+	ros::Publisher vel_pub;
+	ros::Publisher pos_pub;
 
 	int32_t publish_rate_;
 	double rate_scale_;
@@ -113,7 +119,6 @@ public:
 		energy_output_.set(0.0f,0.0f,0.0f);
 		energy_reference_.set(0.0f,0.0f,0.0f);
 
-
 		Acc_.set(0.0f,0.0f,0.0f);
 		Vm_.set(0.0f,0.0f,0.0f);
 		Xm_.set(0.0f,0.0f,0.0f);
@@ -141,14 +146,13 @@ public:
 		}
 	}
 
-	void MassSpringDamper(hduVector3Dd& force,hduVector3Dd& pos)
+	void MassSpringDamper(hduVector3Dd& force,hduVector3Dd& pos,hduVector3Dd& vel)
 	{
-		for (int i=0;i<3;i++)
+		for (int i = 0;i < 3; i++)
 		{
-			Acc_[i] = (-K_master_*(Xm_[i] - pos[i]) + force[i])/Mss_;
-			Vm_[i] += Acc_[i]*0.001;
-			Xm_[i] += Vm_[i]*0.001;
-
+			Acc_[i] = (-K_master_*(Xm_[i] - pos[i]) -beta_*(Vm_[i] - vel[i]/dT_) + force[i])/Mss_;
+			Vm_[i] += Acc_[i]*dT_;
+			Xm_[i] += Vm_[i]*dT_;
 			force[i] = K_master_*(Xm_[i] - pos[i]);
 		}
 	}
@@ -165,109 +169,103 @@ public:
 		// as Master, actual velocity will be publish, corresponding energy should be calculated.
 		if (master_)
 		{
-			popc_vel_.updatePoPc(force_feedback_,velocity_actual_,true);
-			energy_input_ = popc_vel_.getInputEnergy();
+			if (!rate_mode_)
+			{
+				popc_vel_.updatePoPc(force_feedback_,velocity_actual_,true);
+				energy_input_ = popc_vel_.getInputEnergy();	
+			}
+			else
+			{
+				popc_vel_.updatePoPc(force_feedback_,position_actual_*rate_scale_,true);
+				energy_input_ = popc_vel_.getInputEnergy();
+			}
 		}
 	}
 	void designVelocityCallback(const brl_teleop_msgs::PackageConstPtr& pkg)
 	{
-		hduVector3Dd master_velocity;
+		master_velocity_[0] = pkg->x;
+		master_velocity_[1] = pkg->y;
+		master_velocity_[2] = pkg->z;
+
 		if (!rate_mode_)
 		{
-			velocity_design_[0] = pkg->x; 		// Design velocity
-			velocity_design_[1] = pkg->y;		// Design velocity
-			velocity_design_[2] = pkg->z;		// Design velocity
+			velocity_design_ = master_velocity_;
 
 			position_design_[0] += velocity_design_[0];
 			position_design_[1] += velocity_design_[1];
 			position_design_[2] += velocity_design_[2];
-		}
-		else
-		{
-			master_velocity[0] = pkg->x; 					// Design velocity
-			master_velocity[1] = pkg->y;					// Design velocity
-			master_velocity[2] = pkg->z;					// Design velocity
+		
+			energy_reference_[0] = pkg->Ex;			// Corresponding Energy
+			energy_reference_[1] = pkg->Ey;			// Corresponding Energy
+			energy_reference_[2] = pkg->Ez;			// Corresponding Energy
 
-			velocity_design_[0] += master_velocity[0]; 		// Design velocity
-			velocity_design_[1] += master_velocity[1];		// Design velocity
-			velocity_design_[2] += master_velocity[2];		// Design velocity
+			force_ctrl_ = PIDController_.compute(position_design_,position_actual_);
 
-			position_design_[0] += velocity_design_[0];
-			position_design_[1] += velocity_design_[1];
-			position_design_[2] += velocity_design_[2];
-		}
-		energy_reference_[0] = pkg->Ex;			// Corresponding Energy
-		energy_reference_[1] = pkg->Ey;			// Corresponding Energy
-		energy_reference_[2] = pkg->Ez;			// Corresponding Energy
-
-		force_ctrl_ = PIDController_.compute(position_design_,position_actual_);
-
-		/*
-		 *  PoPc should be inserted here for both velocity/force channel
-		 */
-
-		if (!master_)
-		{
-			if (!rate_mode_)
+			// Energy calculation for force feedback channel		
+			popc_force_.updatePoPc(force_ctrl_,velocity_design_,true);
+			energy_input_ = popc_force_.getInputEnergy();	
+			// Passivity controller for velocity command channel
+			popc_vel_.updatePoPc(force_ctrl_,velocity_design_,false);
+			if (popc_enable_)
 			{
-				popc_force_.updatePoPc(force_ctrl_,velocity_design_,true);
-				energy_input_ = popc_force_.getInputEnergy();
+				popc_vel_.PassivityController(energy_reference_,false);
+				position_design_[0] -= velocity_design_[0];
+				position_design_[1] -= velocity_design_[1];
+				position_design_[2] -= velocity_design_[2];
 
-				popc_vel_.updatePoPc(force_ctrl_,velocity_design_,false);
-				if (popc_enable_)
-				{
-					popc_vel_.PassivityController(energy_reference_,false);
-					position_design_[0] -= velocity_design_[0];
-					position_design_[1] -= velocity_design_[1];
-					position_design_[2] -= velocity_design_[2];
+				velocity_design_ = popc_vel_.getVel();
 
-					velocity_design_ = popc_vel_.getVel();
+				position_design_[0] += velocity_design_[0];
+				position_design_[1] += velocity_design_[1];
+				position_design_[2] += velocity_design_[2];
 
-					position_design_[0] += velocity_design_[0];
-					position_design_[1] += velocity_design_[1];
-					position_design_[2] += velocity_design_[2];
-
-					force_ctrl_popc_ = PIDController_.compute(position_design_,position_actual_);
-				}
-				energy_output_ = popc_vel_.getOutputEnergy();
+				force_ctrl_popc_ = PIDController_.compute(position_design_,position_actual_);
 			}
-			else
-			{
-				popc_force_.updatePoPc(force_ctrl_,master_velocity,true);
-				energy_input_ = popc_force_.getInputEnergy();
-
-				popc_vel_.updatePoPc(force_ctrl_,master_velocity,false);
-
-				if (popc_enable_)
-				{
-					popc_vel_.PassivityController(energy_reference_,false);
-
-					velocity_design_[0] -= master_velocity[0]; 		// Design velocity
-					velocity_design_[1] -= master_velocity[1];		// Design velocity
-					velocity_design_[2] -= master_velocity[2];		// Design velocity
-
-					position_design_[0] -= rate_scale_*velocity_design_[0];
-					position_design_[1] -= rate_scale_*velocity_design_[1];
-					position_design_[2] -= rate_scale_*velocity_design_[2];
-
-					master_velocity = popc_vel_.getVel();
-
-					velocity_design_[0] += pkg->x; 		// Design velocity
-					velocity_design_[1] += pkg->y;		// Design velocity
-					velocity_design_[2] += pkg->z;		// Design velocity
-
-					position_design_[0] += rate_scale_*velocity_design_[0];
-					position_design_[1] += rate_scale_*velocity_design_[1];
-					position_design_[2] += rate_scale_*velocity_design_[2];
-
-					force_ctrl_popc_ = PIDController_.compute(position_design_,position_actual_);
-				}
-				energy_output_ = popc_vel_.getOutputEnergy();
-			}
+			energy_output_ = popc_vel_.getOutputEnergy();
 		}
-
 	}
+	void positionCallback(const brl_teleop_msgs::PackageConstPtr& pkg)
+	{
+		velocity_design_[0] = pkg->x;
+		velocity_design_[1] = pkg->y;
+		velocity_design_[2] = pkg->z;
 
+		if (rate_mode_)
+		{
+			position_design_[0] += velocity_design_[0];
+			position_design_[1] += velocity_design_[1];
+			position_design_[2] += velocity_design_[2];
+		
+			energy_reference_[0] = pkg->Ex;			// Corresponding Energy
+			energy_reference_[1] = pkg->Ey;			// Corresponding Energy
+			energy_reference_[2] = pkg->Ez;			// Corresponding Energy
+
+			ROS_INFO("Design Position: %5f %5f %5f ",position_design_[0],position_design_[1],position_design_[2]);
+			force_ctrl_ = PIDController_.compute(position_design_,position_actual_);
+
+			// Energy calculation for force feedback channel		
+			popc_force_.updatePoPc(force_ctrl_,master_velocity_,true);
+			energy_input_ = popc_force_.getInputEnergy();	
+			// Passivity controller for velocity command channel
+			popc_vel_.updatePoPc(force_ctrl_,velocity_design_,false);
+			if (popc_enable_)
+			{
+				popc_vel_.PassivityController(energy_reference_,false);
+				position_design_[0] -= velocity_design_[0];
+				position_design_[1] -= velocity_design_[1];
+				position_design_[2] -= velocity_design_[2];
+
+				velocity_design_ = popc_vel_.getVel();
+
+				position_design_[0] += velocity_design_[0];
+				position_design_[1] += velocity_design_[1];
+				position_design_[2] += velocity_design_[2];
+
+				force_ctrl_popc_ = PIDController_.compute(position_design_,position_actual_);
+			}
+			energy_output_ = popc_vel_.getOutputEnergy();
+		}
+	}
 	void forceCallback(const brl_teleop_msgs::PackageConstPtr& pkg)
 	{
 		curTime_ = ros::Time::now().toSec();
@@ -291,15 +289,7 @@ public:
 			{
 				popc_force_.PassivityController(energy_reference_,false);
 				force_feedback_popc_ = popc_force_.getForce();
-
-				//MassSpringDamper(force_feedback_popc_,position_actual_);
-				for (int i = 0;i < 3; i++)
-				{
-					Acc_[i] = (-K_master_*(Xm_[i] - position_actual_[i]) -beta_*(Vm_[i] - velocity_actual_[i]/dT_) + force_feedback_popc_[i])/Mss_;
-					Vm_[i] += Acc_[i]*dT_;
-					Xm_[i] += Vm_[i]*dT_;
-					force_feedback_popc_[i] = K_master_*(Xm_[i] - position_actual_[i]);
-				}
+				MassSpringDamper(force_feedback_popc_,position_actual_,velocity_actual_);
 			}
 			energy_output_ = popc_force_.getOutputEnergy();
 		}
@@ -382,13 +372,35 @@ public:
 		pkg_out.y = velocity_actual_[1];
 		pkg_out.z = velocity_actual_[2];
 
-		pkg_out.Ex = energy_input_[0];
-		pkg_out.Ey = energy_input_[1];
-		pkg_out.Ez = energy_input_[2];
+		if (!rate_mode_)
+		{
+			pkg_out.Ex = energy_input_[0];
+			pkg_out.Ey = energy_input_[1];
+			pkg_out.Ez = energy_input_[2];	
+		}
 
-		pack_pub.publish(pkg_out);
+		vel_pub.publish(pkg_out);
 	}
 
+	void position_publish()
+	{
+		brl_teleop_msgs::Package pkg_out;
+		pkg_out.header.frame_id = ros::this_node::getName();
+		pkg_out.header.stamp = ros::Time::now();
+
+		pkg_out.x = position_actual_[0] * rate_scale_;
+		pkg_out.y = position_actual_[1] * rate_scale_;
+		pkg_out.z = position_actual_[2] * rate_scale_;
+
+		if (rate_mode_)
+		{
+			pkg_out.Ex = energy_input_[0];
+			pkg_out.Ey = energy_input_[1];
+			pkg_out.Ez = energy_input_[2];
+		}
+
+		pos_pub.publish(pkg_out);
+	}
 	void init()
 	{
 		// Ros Node
@@ -415,6 +427,16 @@ public:
 
 			design_velocity_sub_ = node_->subscribe<brl_teleop_msgs::Package>(design_velocity_src_name_ + std::string("/") + design_velocity_topic_name_, 100,
 								&controller::designVelocityCallback,this);
+		}
+
+		node_->param(std::string("position_src_name"), position_src_name_, std::string(""));
+		if(!position_src_name_.empty())
+		{
+			node_->param(std::string("position_topic_name"), position_topic_name_, std::string("velocity"));
+			std::cout << "\t" << "position_topic_name = " << position_topic_name_ << std::endl;
+
+			master_velocity_sub_ = node_->subscribe<brl_teleop_msgs::Package>(position_src_name_ + std::string("/") + position_topic_name_, 100,
+								&controller::positionCallback,this);
 		}
 		// feedback force
 		node_->param(std::string("feedback_force_src_name"), feedback_force_src_name_, std::string(""));
@@ -453,8 +475,8 @@ public:
 		force_feedback_pub_ = node_->advertise<brl_teleop_msgs::Package>("force_feedback", 100);
 		force_ctrl_pub_ = node_->advertise<brl_teleop_msgs::Package>("force_control", 100);
 		force_ctrl_slv_pub_ = node_->advertise<brl_teleop_msgs::Package>("force_control_slv", 100);
-		pack_pub = node_->advertise<brl_teleop_msgs::Package>("velocity", 100);
-
+		vel_pub = node_->advertise<brl_teleop_msgs::Package>("velocity", 100);
+		pos_pub = node_->advertise<brl_teleop_msgs::Package>("position", 100);
 		// Record file
 	}
 };
@@ -473,6 +495,7 @@ void *ros_publish(void *ptr)
 	   if (Controller->master_)
 	   {
 		   Controller->velocity_publish();
+		   Controller->position_publish();
 		   Controller->force_feedback_publish();
 	   }
 	   else
@@ -480,7 +503,9 @@ void *ros_publish(void *ptr)
 		   Controller->force_ctrl_publish();
 		   Controller->force_ctrl_slv_publish();
 	   }
-	   fprintf(data,"%.3f %.3f\n",Controller->energy_input_[0],Controller->energy_output_[0]);
+	   fprintf(data,"%.3f %.3f %.3f %.3f %.3f %.3f\n",Controller->energy_reference_[0],Controller->energy_output_[0],
+	   						Controller->energy_reference_[1],Controller->energy_output_[1],
+	   						Controller->energy_reference_[2],Controller->energy_output_[2]);
        loop_rate.sleep();
    }
    fclose(data);
