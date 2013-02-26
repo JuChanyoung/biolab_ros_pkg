@@ -1,0 +1,17 @@
+<package>
+  <description brief="brl_teleop_controller">
+
+     brl_teleop_controller
+
+  </description>
+  <author>haquang</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/brl_teleop_controller</url>
+  <depend package="roscpp"/>
+  <depend package="Aria"/>
+  <depend package="brl_teleop_msgs"/>
+
+</package>
+
+

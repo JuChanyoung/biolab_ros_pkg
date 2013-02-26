@@ -1,0 +1,7 @@
+<launch>
+	<node name="phantom_master2" pkg="brl_teleop_phantom" type="brl_teleop_phantom" output="screen">
+		<param name="force_src_name" value="/MMSS_master2" />
+    <param name="force_topic_name" value="force_popc" />
+		<param name="disable_force" value="true"		/>
+	</node>
+</launch>

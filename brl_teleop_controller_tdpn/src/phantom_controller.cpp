@@ -208,18 +208,21 @@ public:
 			popc_vel_.updatePoPc(force_ctrl_,velocity_design_,false);
 			if (popc_enable_)
 			{
-				popc_vel_.PassivityController(energy_reference_,false);
-				position_design_[0] -= velocity_design_[0];
-				position_design_[1] -= velocity_design_[1];
-				position_design_[2] -= velocity_design_[2];
+				if (popc_vel_.PassivityController(energy_reference_,false))
+				{
+					position_design_[0] -= velocity_design_[0];
+					position_design_[1] -= velocity_design_[1];
+					position_design_[2] -= velocity_design_[2];
 
-				velocity_design_ = popc_vel_.getVel();
+					velocity_design_ = popc_vel_.getVel();
 
-				position_design_[0] += velocity_design_[0];
-				position_design_[1] += velocity_design_[1];
-				position_design_[2] += velocity_design_[2];
+					position_design_[0] += velocity_design_[0];
+					position_design_[1] += velocity_design_[1];
+					position_design_[2] += velocity_design_[2];
 
-				force_ctrl_popc_ = PIDController_.compute(position_design_,position_actual_);
+					force_ctrl_popc_ = PIDController_.compute(position_design_,position_actual_);
+					popc_vel_.updateModifiedEnergy(force_ctrl_popc_,false);	
+				}
 			}
 			energy_output_ = popc_vel_.getOutputEnergy();
 		}
@@ -240,7 +243,6 @@ public:
 			energy_reference_[1] = pkg->Ey;			// Corresponding Energy
 			energy_reference_[2] = pkg->Ez;			// Corresponding Energy
 
-			ROS_INFO("Design Position: %5f %5f %5f ",position_design_[0],position_design_[1],position_design_[2]);
 			force_ctrl_ = PIDController_.compute(position_design_,position_actual_);
 
 			// Energy calculation for force feedback channel		
@@ -250,18 +252,21 @@ public:
 			popc_vel_.updatePoPc(force_ctrl_,velocity_design_,false);
 			if (popc_enable_)
 			{
-				popc_vel_.PassivityController(energy_reference_,false);
-				position_design_[0] -= velocity_design_[0];
-				position_design_[1] -= velocity_design_[1];
-				position_design_[2] -= velocity_design_[2];
+				if (popc_vel_.PassivityController(energy_reference_,false))
+				{
+					position_design_[0] -= velocity_design_[0];
+					position_design_[1] -= velocity_design_[1];
+					position_design_[2] -= velocity_design_[2];
 
-				velocity_design_ = popc_vel_.getVel();
+					velocity_design_ = popc_vel_.getVel();
 
-				position_design_[0] += velocity_design_[0];
-				position_design_[1] += velocity_design_[1];
-				position_design_[2] += velocity_design_[2];
+					position_design_[0] += velocity_design_[0];
+					position_design_[1] += velocity_design_[1];
+					position_design_[2] += velocity_design_[2];
 
-				force_ctrl_popc_ = PIDController_.compute(position_design_,position_actual_);
+					force_ctrl_popc_ = PIDController_.compute(position_design_,position_actual_);
+					popc_vel_.updateModifiedEnergy(force_ctrl_popc_,false);	
+				}				
 			}
 			energy_output_ = popc_vel_.getOutputEnergy();
 		}
@@ -287,8 +292,9 @@ public:
 			popc_force_.updatePoPc(force_feedback_,velocity_actual_,false);
 			if (popc_enable_)
 			{
-				popc_force_.PassivityController(energy_reference_,false);
-				force_feedback_popc_ = popc_force_.getForce();
+				if (popc_force_.PassivityController(energy_reference_,false))
+					force_feedback_popc_ = popc_force_.getForce();
+										
 				MassSpringDamper(force_feedback_popc_,position_actual_,velocity_actual_);
 			}
 			energy_output_ = popc_force_.getOutputEnergy();

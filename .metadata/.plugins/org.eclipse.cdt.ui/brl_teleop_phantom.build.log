@@ -1,0 +1,18 @@
+15:53:27 **** Build of project brl_teleop_phantom ****
+/usr/bin/make all 
+/usr/bin/cmake -H/home/haquang/fuerte_worspace/sandbox/brl_teleop_phantom -B/home/haquang/fuerte_worspace/sandbox/brl_teleop_phantom --check-build-system CMakeFiles/Makefile.cmake 0
+/usr/bin/cmake -E cmake_progress_start /home/haquang/fuerte_worspace/sandbox/brl_teleop_phantom/CMakeFiles /home/haquang/fuerte_worspace/sandbox/brl_teleop_phantom/CMakeFiles/progress.marks
+/usr/bin/make -f CMakeFiles/Makefile2 all
+make[1]: Entering directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_phantom'
+/usr/bin/make -f CMakeFiles/rospack_genmsg_libexe.dir/build.make CMakeFiles/rospack_genmsg_libexe.dir/depend
+/bin/sh: 1: cd: can't cd to /home/haquang/fuerte_worspace/sandbox/brl_teleop_phantom
+make[2]: *** [CMakeFiles/rospack_genmsg_libexe.dir/depend] Error 2
+make[1]: *** [CMakeFiles/rospack_genmsg_libexe.dir/all] Error 2
+make: *** [all] Error 2
+make[2]: Entering directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_phantom'
+cd /home/haquang/fuerte_worspace/sandbox/brl_teleop_phantom && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/haquang/fuerte_worspace/sandbox/brl_teleop_phantom /home/haquang/fuerte_worspace/sandbox/brl_teleop_phantom /home/haquang/fuerte_worspace/sandbox/brl_teleop_phantom /home/haquang/fuerte_worspace/sandbox/brl_teleop_phantom /home/haquang/fuerte_worspace/sandbox/brl_teleop_phantom/CMakeFiles/rospack_genmsg_libexe.dir/DependInfo.cmake --color=
+make[2]: Leaving directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_phantom'
+make[1]: Leaving directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_phantom'
+
+15:53:28 Build Finished (took 327ms)
+

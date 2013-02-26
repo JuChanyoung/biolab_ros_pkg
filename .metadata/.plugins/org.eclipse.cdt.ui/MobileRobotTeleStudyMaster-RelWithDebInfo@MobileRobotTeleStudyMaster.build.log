@@ -1,0 +1,9 @@
+13:32:21 **** Build of project MobileRobotTeleStudyMaster-RelWithDebInfo@MobileRobotTeleStudyMaster ****
+/usr/bin/make all 
+/usr/bin/cmake -H/home/tam/haquang_workspace/MobileRobotTeleStudyMaster -B/home/tam/haquang_workspace/MobileRobotTeleStudyMaster --check-build-system CMakeFiles/Makefile.cmake 0
+CMake Error: The source directory "/home/tam/haquang_workspace/MobileRobotTeleStudyMaster" does not exist.
+Specify --help for usage, or press the help button on the CMake GUI.
+make: *** [cmake_check_build_system] Error 1
+
+13:32:21 Build Finished (took 109ms)
+

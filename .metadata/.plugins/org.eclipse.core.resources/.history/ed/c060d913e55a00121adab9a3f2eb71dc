@@ -1,0 +1,189 @@
+/*
+ * PoPc.h
+ *
+ *  Created on: Dec 22, 2012
+ *      Author: haquang
+ *  Description: This is a template for Passivity Observer - Passivity Controller
+ */
+
+#ifndef POPC_H_
+#define POPC_H_
+
+template <class T>
+class PoPc{
+private:
+	T force_in_; 		// Input Force
+	T force_out_; 		// Modified Force
+
+	T velocity_in_; 	// Input Velocity
+	T velocity_out_; 	// Modified Velocity
+
+	T energy_input_; 	// Positive Energy
+	T energy_output_; 	// Negative Energy
+
+	bool impedance_; 	// Admittance and Impedance
+	bool active_;		// Active PC/ inactive PC
+	int Dof_;			// Degree of freedom
+public:
+
+	PoPc()
+	{
+		impedance_ =  true;
+		active_ = false;
+		Dof_ = 1;
+		for (int j=0;j<Dof_;j++)
+		{
+			force_in_[j] = 0;
+			force_out_[j] = 0;
+
+			velocity_in_[j] = 0;
+			velocity_out_[j] = 0;
+
+			energy_input_[j] = 0;
+			energy_output_[j] = 0;
+		}
+
+	}
+	PoPc(bool impedance,bool active,int Dof):impedance_(impedance),active_(active),Dof_(Dof) {
+		for (int j=0;j<Dof_;j++)
+		{
+			force_in_[j] = 0;
+			force_out_[j] = 0;
+
+			velocity_in_[j] = 0;
+			velocity_out_[j] = 0;
+
+			energy_input_[j] = 0;
+			energy_output_[j] = 0;
+		}
+	}
+
+	void configure(bool impedance,bool active,int Dof)
+	{
+		Dof_ = Dof;
+		impedance_ = impedance;
+		active_ = active;
+	}
+
+	void updatePoPc(T force_in,T velocity_in,bool invert)
+	{
+		/*
+		 * invert = true: 	input energy means force and velocity has same sign
+		 * invert = false: 	input energy means force and velocity has opposite sign
+		 */
+		force_in_ = force_in;
+		velocity_in_ = velocity_in;
+
+		for (int j=0;j<Dof_;j++)
+		{
+			if (!invert)
+			{
+				if (force_in_[j]*velocity_in_[j]>0)
+				{
+					if (active_) // calculate negative energy
+						energy_output_[j] -= force_in_[j]*velocity_in_[j];
+					else		// calculate positive energy
+						energy_input_[j] += force_in_[j]*velocity_in_[j];
+				}
+			}
+			else
+			{
+				if (force_in_[j]*velocity_in_[j]<0)
+				{
+					if (active_) // calculate negative energy
+						energy_output_[j] += force_in_[j]*velocity_in_[j];
+					else		// calculate positive energy
+						energy_input_[j] -= force_in_[j]*velocity_in_[j];
+				}
+			}
+
+		}
+	}
+	bool PassivityController(T reference_energy,bool invert)
+	{
+		if (!active_)
+		{
+			return false;
+		}
+		else
+		{
+			if (impedance_) //Modify Velocity
+			{
+				for (int j=0;j<Dof_;j++)
+				{
+					if (reference_energy[j] + energy_output_[j] <0)
+					{
+						if (!invert)
+						{
+							energy_output_[j] += force_in_[j]*velocity_in_[j];  //backward 1 step
+							velocity_out_[j] = (reference_energy[j] + energy_output_[j])/force_in_[j];
+							energy_output_[j] -= force_in_[j]*velocity_out_[j];  //update 1 step
+						}
+						else
+						{
+							energy_output_[j] -= force_in_[j]*velocity_in_[j];  //backward 1 step
+							velocity_out_[j] = (reference_energy[j] + energy_output_[j])/force_in_[j];
+							energy_output_[j] += force_in_[j]*velocity_out_[j];  //update 1 step
+						}
+					}
+					else
+					{
+						velocity_out_[j] = velocity_in_[j]; // Without any modification
+					}
+				}
+			}
+
+			else   // Modify Force
+			{
+				for (int j=0;j<Dof_;j++)
+				{
+					if (!invert)
+					{
+						if (reference_energy[j] + energy_output_[j] <0)
+						{
+							energy_output_[j] += force_in_[j]*velocity_in_[j];  //backward 1 step
+							force_out_[j] = (reference_energy[j] + energy_output_[j])/velocity_in_[j];
+							energy_output_[j] -= force_out_[j]*velocity_in_[j];  //update 1 step
+						}
+						else
+						{
+							energy_output_[j] -= force_in_[j]*velocity_in_[j];  //backward 1 step
+							force_out_[j] = (reference_energy[j] + energy_output_[j])/velocity_in_[j];
+							energy_output_[j] += force_out_[j]*velocity_in_[j];  //update 1 step
+						}
+					}
+					else
+					{
+						force_out_[j] = force_in_[j]; // Without any modification
+					}
+				}
+			}
+		}
+		return true;
+	}
+	T getForce()
+	{
+		return force_out_;
+	}
+	T getVel()
+	{
+		return velocity_out_;
+	}
+	T getInputEnergy()
+	{
+		return energy_input_;
+	}
+
+	T getOutputEnergy()
+	{
+		return energy_output_;
+	}
+
+	~PoPc() {
+		// TODO Auto-generated destructor stub
+	}
+};
+
+
+
+#endif /* POPC_H_ */

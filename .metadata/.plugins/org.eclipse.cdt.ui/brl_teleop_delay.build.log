@@ -1,0 +1,41 @@
+13:32:22 **** Build of project brl_teleop_delay ****
+/usr/bin/make all 
+/usr/bin/cmake -H/home/haquang/fuerte_workspace/sandbox/brl_teleop_delay -B/home/haquang/fuerte_workspace/sandbox/brl_teleop_delay --check-build-system CMakeFiles/Makefile.cmake 0
+/usr/bin/cmake -E cmake_progress_start /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay/CMakeFiles /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay/CMakeFiles/progress.marks
+/usr/bin/make -f CMakeFiles/Makefile2 all
+make[1]: Entering directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_delay'
+/usr/bin/make -f CMakeFiles/rospack_genmsg_libexe.dir/build.make CMakeFiles/rospack_genmsg_libexe.dir/depend
+make[2]: Entering directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_delay'
+cd /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay/CMakeFiles/rospack_genmsg_libexe.dir/DependInfo.cmake --color=
+make[2]: Leaving directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_delay'
+/usr/bin/make -f CMakeFiles/rospack_genmsg_libexe.dir/build.make CMakeFiles/rospack_genmsg_libexe.dir/build
+make[2]: Entering directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_delay'
+make[2]: Nothing to be done for `CMakeFiles/rospack_genmsg_libexe.dir/build'.
+make[2]: Leaving directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_delay'
+/usr/bin/cmake -E cmake_progress_report /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay/CMakeFiles 
+[  0%] Built target rospack_genmsg_libexe
+/usr/bin/make -f CMakeFiles/rosbuild_precompile.dir/build.make CMakeFiles/rosbuild_precompile.dir/depend
+make[2]: Entering directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_delay'
+cd /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay/CMakeFiles/rosbuild_precompile.dir/DependInfo.cmake --color=
+make[2]: Leaving directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_delay'
+/usr/bin/make -f CMakeFiles/rosbuild_precompile.dir/build.make CMakeFiles/rosbuild_precompile.dir/build
+make[2]: Entering directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_delay'
+make[2]: Nothing to be done for `CMakeFiles/rosbuild_precompile.dir/build'.
+make[2]: Leaving directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_delay'
+/usr/bin/cmake -E cmake_progress_report /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay/CMakeFiles 
+[  0%] Built target rosbuild_precompile
+/usr/bin/make -f CMakeFiles/delay.dir/build.make CMakeFiles/delay.dir/depend
+make[2]: Entering directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_delay'
+cd /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay/CMakeFiles/delay.dir/DependInfo.cmake --color=
+make[2]: Leaving directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_delay'
+/usr/bin/make -f CMakeFiles/delay.dir/build.make CMakeFiles/delay.dir/build
+make[2]: Entering directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_delay'
+make[2]: Nothing to be done for `CMakeFiles/delay.dir/build'.
+make[2]: Leaving directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_delay'
+/usr/bin/cmake -E cmake_progress_report /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay/CMakeFiles  1
+[100%] Built target delay
+make[1]: Leaving directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_delay'
+/usr/bin/cmake -E cmake_progress_start /home/haquang/fuerte_workspace/sandbox/brl_teleop_delay/CMakeFiles 0
+
+13:32:22 Build Finished (took 636ms)
+

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+	<include file="$(find brl_teleop_phantom)/launch/phantom_master.launch" />
+	<node name="SMSS_master" pkg="brl_teleop_controller" type="phantom_single_controller" output="screen">
+		<param name="master" value="true"	/>
+		<param name="popc_enable" value="false"	/>
+
+		<param name="feedback_force_src_name" value="/SMSS_slave" />
+    	<param name="feedback_force_topic_name" value="force_control" />
+
+		<param name="actual_velocity_src_name" value="/phantom_master" />
+    	<param name="actual_velocity_topic_name" value="velocity" />
+
+	</node>
+</launch>
+

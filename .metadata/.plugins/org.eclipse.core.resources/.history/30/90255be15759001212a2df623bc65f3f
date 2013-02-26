@@ -1,0 +1,137 @@
+//============================================================================
+// Name        : main.cpp
+// Author      : Haquang
+// Version     : 1.0
+// Copyright   : Your copyright notice
+// Description : This node make the delay in teleoperation system
+//============================================================================
+
+//--------------- ROS --------------//
+#include <ros/ros.h>
+#include <brl_teleop_msgs/Force.h>
+#include <brl_teleop_msgs/Pos.h>
+#include <brl_teleop_msgs/Vel.h>
+#include <brl_teleop_msgs/Energy.h>
+#include <brl_teleop_msgs/Common.h>
+#include <brl_teleop_msgs/Package.h>
+//-------------- Common -----------//
+#include <iostream>
+#include <functional>
+#include <algorithm>
+#include <stdlib.h>
+
+const int32_t PUBLISH_RATE = 1000;
+const int32_t TIME_DELAY = 1;
+
+class delay
+{
+public:
+	int32_t time_delay_;
+
+//	brl_teleop_msgs::Package* pack_arr_;
+
+	brl_teleop_msgs::Package pack_in_;
+	brl_teleop_msgs::Package pack_out_;
+
+	std::string subscriber_src_name_;    	//  Source for subscribing
+	std::string subscriber_topic_name_;		//	Topic for subscribing
+
+	std::string publish_topic_name_;		//  Source for publishing
+
+	ros::NodeHandlePtr node_;
+	int32_t publish_rate_;
+
+	ros::Subscriber subscriber_;
+	ros::Publisher publisher_;
+
+	delay()
+	{
+		init();
+//		pack_arr_ = new brl_teleop_msgs::Package[time_delay_];
+	}
+
+	void subscriberCallback(const brl_teleop_msgs::PackageConstPtr& pkg)
+	{
+		pack_in_ = *pkg;
+	}
+	void publishPackage()
+	{
+		brl_teleop_msgs::Package pkg_out;
+		pkg_out.header.frame_id = ros::this_node::getName();
+		pkg_out.header.stamp    = ros::Time::now();
+
+		pkg_out = pack_out_;
+		publisher_.publish(pkg_out);
+	}
+
+	void make_delay()
+	{
+//		int32_t i;
+//		for(i=0; i <time_delay_-1; i++)
+//		{
+//			pack_arr_[i] = pack_arr_[i+1];
+//		}
+//		pack_arr_[time_delay_-1] = pack_in_;
+//		pack_out_ = pack_arr_[0];
+		pack_out_ = pack_in_;
+	}
+
+	void init()
+	{
+		node_ = ros::NodeHandlePtr(new ros::NodeHandle("~"));
+			std::cout << "Starting with the following parameters:" << std::endl;
+		node_->param(std::string("publish_rate"), publish_rate_, PUBLISH_RATE);
+			std::cout << "\t" << "publish_rate = " << publish_rate_ << std::endl;
+		node_->param(std::string("time_delay"), time_delay_, TIME_DELAY);
+			std::cout << "\t" << "time_delay = " << time_delay_ << std::endl;
+
+		// Subscriber setting
+		node_->param(std::string("subscriber_src_name"), subscriber_src_name_, std::string(""));
+		if(!subscriber_src_name_.empty())
+		{
+			node_->param(std::string("subscriber_topic_name"), subscriber_topic_name_, std::string("velocity"));
+			std::cout << "\t" << "subscriber_topic_name = " << subscriber_topic_name_ << std::endl;
+
+			subscriber_ = node_->subscribe<brl_teleop_msgs::Package>(subscriber_src_name_ + std::string("/") + subscriber_topic_name_, 100,
+								&delay::subscriberCallback,this);
+		}
+
+		// Publisher setting
+		node_->param(std::string("publisher_topic_name"), publish_topic_name_, std::string(""));
+		std::cout << "\t" << "publisher_topic_name = " << publish_topic_name_ << std::endl;
+
+		publisher_ = node_->advertise<brl_teleop_msgs::Package>(publish_topic_name_, 100);
+	}
+};
+
+// ROS Callback
+void *ros_publish(void *ptr)
+{
+   delay *delayNode = (delay*) ptr;
+   ros::Rate loop_rate(delayNode->publish_rate_);
+   ros::AsyncSpinner spinner(2);
+   spinner.start();
+
+   while(ros::ok())
+   {
+	   delayNode->make_delay();
+	   delayNode->publishPackage();
+	   loop_rate.sleep();
+   }
+   return NULL;
+}
+//--------- Main Program -----------//
+int main(int argc, char** argv)
+{
+	//-- Init ROS node
+	ros::init(argc, argv, "delay node");
+
+	delay delayNode;
+
+	//-- Threads
+	pthread_t publish_thread;
+	pthread_create(&publish_thread,NULL,ros_publish,(void*) &delayNode);
+	pthread_join(publish_thread,NULL);
+
+	ROS_INFO("Ending Session...\n");
+}

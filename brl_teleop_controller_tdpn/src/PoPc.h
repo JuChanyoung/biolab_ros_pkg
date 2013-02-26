@@ -21,16 +21,21 @@ private:
 	T energy_input_; 	// Positive Energy
 	T energy_output_; 	// Negative Energy
 
-	bool impedance_; 	// Admittance and Impedance
+	bool velocity_type_; 	// force_type and velocity_type
 	bool active_;		// Active PC/ inactive PC
 	int Dof_;			// Degree of freedom
+	bool* pc_run_;	// Track if POPC run
 public:
 
 	PoPc()
 	{
-		impedance_ =  true;
+		velocity_type_ =  true;
 		active_ = false;
 		Dof_ = 1;
+	}
+	PoPc(bool velocity_type,bool active,int Dof):velocity_type_(velocity_type),active_(active),Dof_(Dof) {
+		pc_run_ = new bool[Dof_];
+
 		for (int j=0;j<Dof_;j++)
 		{
 			force_in_[j] = 0;
@@ -41,31 +46,19 @@ public:
 
 			energy_input_[j] = 0;
 			energy_output_[j] = 0;
+			pc_run_[j] = false;
 		}
 
 	}
-	PoPc(bool impedance,bool active,int Dof):impedance_(impedance),active_(active),Dof_(Dof) {
-		for (int j=0;j<Dof_;j++)
-		{
-			force_in_[j] = 0;
-			force_out_[j] = 0;
 
-			velocity_in_[j] = 0;
-			velocity_out_[j] = 0;
-
-			energy_input_[j] = 0;
-			energy_output_[j] = 0;
-		}
-	}
-
-	void configure(bool impedance,bool active,int Dof)
+	void configure(bool velocity_type,bool active,int Dof)
 	{
 		Dof_ = Dof;
-		impedance_ = impedance;
+		velocity_type_ = velocity_type;
 		active_ = active;
 	}
 
-	void updatePoPc(T force_in,T velocity_in,bool invert)
+	void updatePoPc(const T &force_in,const T &velocity_in,bool invert)
 	{
 		/*
 		 * invert = true: 	input energy means force and velocity has same sign
@@ -99,7 +92,7 @@ public:
 
 		}
 	}
-	bool PassivityController(T reference_energy,bool invert)
+	bool PassivityController(const T &reference_energy,bool invert)
 	{
 		if (!active_)
 		{
@@ -107,7 +100,7 @@ public:
 		}
 		else
 		{
-			if (impedance_) //Modify Velocity
+			if (velocity_type_) //Modify Velocity
 			{
 				for (int j=0;j<Dof_;j++)
 				{
@@ -117,18 +110,23 @@ public:
 						{
 							energy_output_[j] += force_in_[j]*velocity_in_[j];  //backward 1 step
 							velocity_out_[j] = (reference_energy[j] + energy_output_[j])/force_in_[j];
-							energy_output_[j] -= force_in_[j]*velocity_out_[j];  //update 1 step
+							pc_run_[j] = true;
+						//	energy_output_[j] -= force_in_[j]*velocity_out_[j];  //update 1 step
+						//	in this case, can not update energy right now because of the control force modification	
 						}
 						else
 						{
 							energy_output_[j] -= force_in_[j]*velocity_in_[j];  //backward 1 step
 							velocity_out_[j] = (reference_energy[j] + energy_output_[j])/force_in_[j];
-							energy_output_[j] += force_in_[j]*velocity_out_[j];  //update 1 step
+							pc_run_[j] = true;
+						//	energy_output_[j] += force_in_[j]*velocity_out_[j];  //update 1 step
+						//	in this case, can not update energy right now because of the control force modification	
 						}
 					}
 					else
 					{
-						velocity_out_[j] = velocity_in_[j]; // Without any modification
+						pc_run_[j] = false;
+						velocity_out_[j] = velocity_in_[j];
 					}
 				}
 			}
@@ -153,12 +151,29 @@ public:
 					}
 					else
 					{
-						force_out_[j] = force_in_[j]; // Without any modification
+						force_out_[j] = force_in_[j];
 					}
 				}
 			}
 		}
 		return true;
+	}
+
+	bool updateModifiedEnergy (const T &force_modified,bool invert)
+	{
+		if (velocity_type_)
+		{
+			for (int j=0;j<Dof_;j++)
+			{
+				if (pc_run_[j])
+				{
+					if (!invert)
+						energy_output_[j] -= force_modified[j]*velocity_out_[j];  //update 1 step
+					else
+						energy_output_[j] += force_modified[j]*velocity_out_[j];  //update 1 step	
+				}
+			}
+		}
 	}
 	T getForce()
 	{

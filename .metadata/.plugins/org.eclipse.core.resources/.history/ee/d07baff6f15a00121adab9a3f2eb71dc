@@ -1,0 +1,278 @@
+//============================================================================
+// Name        : main.cpp
+// Author      : Haquang
+// Version     : 1.0
+// Copyright   : Your copyright notice
+// Description : This node control phantom device, subscribe to /force topic and
+//				 publish /velocity topic (displacement)
+//============================================================================
+
+//ROS
+#include <ros/ros.h>
+#include <brl_teleop_msgs/Vel.h>
+#include <brl_teleop_msgs/Force.h>
+#include <brl_teleop_msgs/Pos.h>
+#include <brl_teleop_msgs/Package.h>
+//Common
+#include <iostream>
+#include <algorithm>
+#include <functional>
+
+// Haptic device
+#include <HD/hd.h>
+#include <HDU/hduError.h>
+#include <HDU/hduVector.h>
+
+const int32_t PUBLISH_RATE = 1000; // 1 kHz
+
+//------------- Phantom Device -------
+class Phantom
+{
+public:
+	// Variables
+	int32_t publish_rate_;
+	bool disable_force_;
+
+	ros::NodeHandlePtr node_;
+
+	std::string force_src_name_;    	//  Source for subscribing
+	std::string force_topic_name_;		//	Topic for subscribing
+
+	ros::Subscriber force_sub_;
+	ros::Publisher 	velocity_pub_;
+
+	hduVector3Dd force_;
+	hduVector3Dd velocity_;
+	hduVector3Dd position_;
+	hduVector3Dd position_origin_;
+
+	double K_master_; // Mass - Spring - Damper
+	double Mss_;
+	hduVector3Dd Acc_;	// Acceleration
+	hduVector3Dd Vm_;	// Velocity
+	hduVector3Dd Xm_;	// Position
+
+
+	// Methods
+	Phantom():
+		publish_rate_(PUBLISH_RATE),
+		disable_force_(false)
+	{
+		Acc_.set(0.0f,0.0f,0.0f);
+		Vm_.set(0.0f,0.0f,0.0f);
+		Xm_.set(0.0f,0.0f,0.0f);
+		K_master_ = 1;
+		Mss_ = 0.0001;
+
+		init();
+	}
+	void forceCallback(const brl_teleop_msgs::PackageConstPtr& msg)
+	{
+		force_[2] = msg->fx;
+		force_[0] = msg->fy;
+		force_[1] = msg->fz;
+	}
+
+	void MassSpringDamper(hduVector3Dd& force,hduVector3Dd& pos)
+	{
+		for (int i=0;i<3;i++)
+		{
+			Acc_[i] = (-K_master_*(Xm_[i] - pos[i]) + force[i])/Mss_;
+			Vm_[i] += Acc_[i]*0.001;
+			Xm_[i] += Vm_[i]*0.001;
+
+			force[i] = K_master_*(Xm_[i] - pos[i]);
+		}
+	}
+	void init()
+	{
+		// Ros Node
+		node_ = ros::NodeHandlePtr(new ros::NodeHandle("~"));
+			std::cout << "Starting with the following parameters:" << std::endl;
+
+		// Settings
+		node_->param(std::string("publish_rate"), publish_rate_, PUBLISH_RATE);
+			std::cout << "\t" << "publish_rate = " << publish_rate_ << std::endl;
+
+		node_->param(std::string("disable_force"), disable_force_, false);
+			std::cout << "\t" << "disable_force = " << disable_force_ << std::endl;
+
+		// Subscriber settings
+		node_->param(std::string("force_src_name"), force_src_name_, std::string(""));
+		if(!force_src_name_.empty())
+		{
+			node_->param(std::string("force_topic_name"), force_topic_name_, std::string("force"));
+			std::cout << "\t" << "force_src_name = " << force_src_name_ << std::endl;
+
+			force_sub_ = node_->subscribe<brl_teleop_msgs::Package>(force_src_name_ + std::string("/") + force_topic_name_, 100,
+								&Phantom::forceCallback,this);
+		}
+		// Publishing settings
+		velocity_pub_ = node_->advertise<brl_teleop_msgs::Vel>("velocity", 100);
+	}
+	void publish()
+	{
+		brl_teleop_msgs::Vel vel_out;
+
+		vel_out.header.frame_id = ros::this_node::getName();
+		vel_out.header.stamp    = ros::Time::now();
+
+		vel_out.deltaX = velocity_[2];
+		vel_out.deltaY = velocity_[0];
+		vel_out.deltaZ = velocity_[1];
+
+		velocity_pub_.publish(vel_out);
+	}
+};
+// -------------- PHANToM Device Callback Function ---------//
+
+HDCallbackCode HDCALLBACK phantom_callback(void *pUserData)
+{
+	Phantom *phantom= static_cast<Phantom*>(pUserData);
+
+	hduVector3Dd pos_cur;
+	hduVector3Dd force;
+
+	double dT = 0.001f;
+
+	hdBeginFrame(hdGetCurrentDevice());
+	// Get current position
+	hdGetDoublev(HD_CURRENT_POSITION, pos_cur);
+
+	// convert position from [mm] to [m]
+	pos_cur *= 0.001f;
+
+	static bool once = true;
+
+	// Use startup position as origin
+	if(once){
+		once = false;
+		phantom->position_origin_ = pos_cur;
+
+		hdEndFrame(hdGetCurrentDevice());
+
+		return HD_CALLBACK_CONTINUE;
+	}
+	pos_cur -= phantom->position_origin_;
+
+	static hduVector3Dd pos_last = pos_cur;
+
+	phantom->velocity_ = (pos_cur - pos_last) / dT;
+	pos_last = pos_cur;
+
+	// Mass - Spring - Damper
+	if(!phantom->disable_force_)
+	{
+		// Set received force
+		hdSetDoublev(HD_CURRENT_FORCE, phantom->force_);
+	}
+
+	hdEndFrame(hdGetCurrentDevice());
+
+	HDErrorInfo error;
+	if (HD_DEVICE_ERROR(error = hdGetError()))
+	{
+		hduPrintError(stderr, &error, "Error during main scheduler callback\n");
+		if (hduIsSchedulerError(&error))
+			return HD_CALLBACK_DONE;
+	}
+
+	return HD_CALLBACK_CONTINUE;
+}
+
+
+/*******************************************************************************
+Automatic Calibration of Phantom Device - No character inputs
+*******************************************************************************/
+
+void HHD_Auto_Calibration()
+{
+   int calibrationStyle;
+   int supportedCalibrationStyles;
+   HDErrorInfo error;
+
+   hdGetIntegerv(HD_CALIBRATION_STYLE, &supportedCalibrationStyles);
+   if (supportedCalibrationStyles & HD_CALIBRATION_ENCODER_RESET)
+   {
+		calibrationStyle = HD_CALIBRATION_ENCODER_RESET;
+		ROS_INFO("HD_CALIBRATION_ENCODER_RESET...\n\n");
+   }
+   if (supportedCalibrationStyles & HD_CALIBRATION_INKWELL)
+   {
+		calibrationStyle = HD_CALIBRATION_INKWELL;
+		ROS_INFO("HD_CALIBRATION_INKWELL...\n\n");
+   }
+   if (supportedCalibrationStyles & HD_CALIBRATION_AUTO)
+   {
+       calibrationStyle = HD_CALIBRATION_AUTO;
+       ROS_INFO("HD_CALIBRATION_AUTO...\n\n");
+   }
+
+   do
+   {
+	   hdUpdateCalibration(calibrationStyle);
+	   ROS_INFO("Calibrating... (put stylus in well)\n");
+       if (HD_DEVICE_ERROR(error = hdGetError()))
+       {
+	       hduPrintError(stderr, &error, "Reset encoders reset failed.");
+	       break;
+           }
+   }   while (hdCheckCalibration() != HD_CALIBRATION_OK);
+
+   ROS_INFO("\n\nCalibration complete.\n");
+}
+
+// ------------------ ROS Callback ------------------------
+
+void *ros_publish(void *ptr)
+{
+   Phantom *phantom = (Phantom*) ptr;
+   ros::Rate loop_rate(phantom->publish_rate_);
+   ros::AsyncSpinner spinner(2);
+   spinner.start();
+
+   while(ros::ok())
+   {
+	   phantom->publish();
+       loop_rate.sleep();
+   }
+   return NULL;
+}
+//-------------- Main function------------//
+int main(int argc, char** argv)
+{
+	//-- Init PHANToM
+
+	HDErrorInfo error;
+	HHD hHD;
+	hHD = hdInitDevice(HD_DEFAULT_DEVICE);
+	if (HD_DEVICE_ERROR(error = hdGetError())) {
+		ROS_ERROR("Failed to initialize haptic device");
+		return -1;
+	}
+
+	ROS_INFO("Found %s.\n\n", hdGetString(HD_DEVICE_MODEL_TYPE));
+	hdEnable(HD_FORCE_OUTPUT);
+	//   hdEnable(HD_MAX_FORCE_CLAMPING);
+	hdStartScheduler();
+	if (HD_DEVICE_ERROR(error = hdGetError())) {
+		ROS_ERROR("Failed to start the scheduler");
+		return -1;
+	}
+	HHD_Auto_Calibration();
+
+	//-- Init ROS node
+	ros::init(argc, argv, "phantom");
+	Phantom phantom;
+
+	//-- Threads
+	hdScheduleAsynchronous(phantom_callback, &phantom, HD_MAX_SCHEDULER_PRIORITY);
+
+	pthread_t publish_thread;
+	pthread_create(&publish_thread,NULL,ros_publish,(void*) &phantom);
+	pthread_join(publish_thread,NULL);
+
+	ROS_INFO("Ending Session...\n");
+	hdStopScheduler();
+	hdDisableDevice(hHD);
+}

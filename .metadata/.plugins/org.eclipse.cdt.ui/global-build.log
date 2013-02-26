@@ -1,0 +1,46 @@
+16:17:53 **** Incremental Build of project brl_teleop_controller_tdpn ****
+/usr/bin/make all 
+/usr/bin/cmake -H/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn -B/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn --check-build-system CMakeFiles/Makefile.cmake 0
+/usr/bin/cmake -E cmake_progress_start /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles/progress.marks
+/usr/bin/make -f CMakeFiles/Makefile2 all
+make[1]: Entering directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn'
+/usr/bin/make -f CMakeFiles/rospack_genmsg_libexe.dir/build.make CMakeFiles/rospack_genmsg_libexe.dir/depend
+make[2]: Entering directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn'
+cd /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles/rospack_genmsg_libexe.dir/DependInfo.cmake --color=
+make[2]: Leaving directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn'
+/usr/bin/make -f CMakeFiles/rospack_genmsg_libexe.dir/build.make CMakeFiles/rospack_genmsg_libexe.dir/build
+make[2]: Entering directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn'
+make[2]: Nothing to be done for `CMakeFiles/rospack_genmsg_libexe.dir/build'.
+make[2]: Leaving directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn'
+/usr/bin/cmake -E cmake_progress_report /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles 
+[  0%] Built target rospack_genmsg_libexe
+/usr/bin/make -f CMakeFiles/rosbuild_precompile.dir/build.make CMakeFiles/rosbuild_precompile.dir/depend
+make[2]: Entering directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn'
+cd /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles/rosbuild_precompile.dir/DependInfo.cmake --color=
+make[2]: Leaving directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn'
+/usr/bin/make -f CMakeFiles/rosbuild_precompile.dir/build.make CMakeFiles/rosbuild_precompile.dir/build
+make[2]: Entering directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn'
+make[2]: Nothing to be done for `CMakeFiles/rosbuild_precompile.dir/build'.
+make[2]: Leaving directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn'
+/usr/bin/cmake -E cmake_progress_report /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles 
+[  0%] Built target rosbuild_precompile
+/usr/bin/make -f CMakeFiles/phantom_controller.dir/build.make CMakeFiles/phantom_controller.dir/depend
+make[2]: Entering directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn'
+cd /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles/phantom_controller.dir/DependInfo.cmake --color=
+Scanning dependencies of target phantom_controller
+make[2]: Leaving directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn'
+/usr/bin/make -f CMakeFiles/phantom_controller.dir/build.make CMakeFiles/phantom_controller.dir/build
+make[2]: Entering directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn'
+/usr/bin/cmake -E cmake_progress_report /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles 1
+[100%] Building CXX object CMakeFiles/phantom_controller.dir/src/phantom_controller.o
+/usr/bin/c++    -O2 -g -I/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/include -I/opt/ros/fuerte/include -I/home/haquang/fuerte_workspace/sandbox/brl_teleop_msgs/msg_gen/cpp/include -I/home/haquang/fuerte_workspace/sandbox/amor-ros-pkg/Aria/Aria/include    -DROS_PACKAGE_NAME='"brl_teleop_controller_tdpn"' -fPIC -W -Wall -Wno-unused-parameter -fno-strict-aliasing -pthread -o CMakeFiles/phantom_controller.dir/src/phantom_controller.o -c /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/src/phantom_controller.cpp
+/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/src/phantom_controller.cpp: In member function ‘void controller::forceCallback(const PackageConstPtr&)’:
+/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/src/phantom_controller.cpp:298:5: warning: too many arguments for format [-Wformat-extra-args]
+Linking CXX executable bin/phantom_controller
+/usr/bin/cmake -E cmake_link_script CMakeFiles/phantom_controller.dir/link.txt --verbose=1
+/usr/bin/c++   -O2 -g    -Wl,-rpath,/home/haquang/fuerte_workspace/sandbox/amor-ros-pkg/Aria/Aria/lib -pthread CMakeFiles/phantom_controller.dir/src/phantom_controller.o  -o bin/phantom_controller -rdynamic -L/opt/ros/fuerte/lib -L/home/haquang/fuerte_workspace/sandbox/amor-ros-pkg/Aria/Aria/lib -lroscpp -lrostime -lrosconsole -lroscpp_serialization -lxmlrpcpp -lAria -lpthread -ldl -lrt -lHDU -lHD -lrt -lncurses -lHDU -lHD -lncurses -Wl,-rpath,/opt/ros/fuerte/lib:/home/haquang/fuerte_workspace/sandbox/amor-ros-pkg/Aria/Aria/lib 
+make[2]: Leaving directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn'
+/usr/bin/cmake -E cmake_progress_report /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles  1
+[100%] Built target phantom_controller
+make[1]: Leaving directory `/home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn'
+/usr/bin/cmake -E cmake_progress_start /home/haquang/fuerte_workspace/sandbox/brl_teleop_controller_tdpn/CMakeFiles 0
