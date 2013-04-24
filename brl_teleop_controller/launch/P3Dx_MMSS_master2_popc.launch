@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<launch>
+	<include file="$(find brl_teleop_phantom)/launch/MMSS_phantom_master2_disable_force.launch" />
+	<node name="MMSS_master2" pkg="brl_teleop_controller" type="mobile_robot_multi_controller" output="screen">
+		<param name="master2" value="true"	/>
+		<param name="popc_enable" value="false"	/>
+		<param name="time_delay" value="1"	/>
+
+		<param name="velocity_master_master_src_name" value="/MMSS_master1" />
+    	<param name="velocity_master_master_topic_name" value="velocity_master_master" />
+		
+		<param name="force_slave_master_src_name" value="/MMSS_slave" />
+    	<param name="force_slave_master_topic_name" value="force_slave_master2" />
+
+		<param name="actual_velocity_src_name" value="/phantom_master2" />
+    	<param name="actual_velocity_topic_name" value="velocity" />
+
+		<rosparam param="gains">{'P': 0.2, 'D': 0.5}</rosparam>
+	</node>
+</launch>
+

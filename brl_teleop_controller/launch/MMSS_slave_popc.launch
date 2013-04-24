@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <launch>
-	<include file="$(find brl_teleop_phantom)/launch/MMSS_phantom_slave_disable_force.launch" />
+	<include file="$(find brl_teleop_phantom)/launch/MMSS_phantom_slave.launch" />
 	<node name="MMSS_slave" pkg="brl_teleop_controller" type="phantom_multi_controller" output="screen">
 		<param name="slave" value="true"	/>
 		<param name="popc_enable" value="true"	/>
-		<param name="time_delay" value="1"	/>
+		<param name="time_delay" value="100"	/>
 
 		<param name="velocity_master1_slave_src_name" value="/MMSS_master1" />
     	<param name="velocity_master1_slave_topic_name" value="velocity_master_slave" />
@@ -15,7 +15,7 @@
 		<param name="actual_velocity_src_name" value="/phantom_slave" />
     	<param name="actual_velocity_topic_name" value="velocity" />
 
-		<rosparam param="gains">{'P': 0.1, 'D': 1}</rosparam>
+		<rosparam param="gains">{'P': 0.2, 'D': 0.5}</rosparam>
 
 	</node>
 </launch>

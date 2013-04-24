@@ -1,6 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-	<include file="$(find brl_teleop_phantom)/launch/phantom_slave.launch" />
-	<include file="$(find brl_teleop_controller_tdpn)/launch/phantom_slave_controller_rate_mode_withoutPoPc.launch" />
-	<include file="$(find brl_teleop_delay)/launch/force_feedback_delay.launch" />
-</launch>

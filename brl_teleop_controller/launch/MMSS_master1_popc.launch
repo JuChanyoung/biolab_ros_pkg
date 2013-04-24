@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <launch>
-	<include file="$(find brl_teleop_phantom)/launch/MMSS_phantom_master1_disable_force.launch" />
+	<include file="$(find brl_teleop_phantom)/launch/MMSS_phantom_master1.launch" />
 	<node name="MMSS_master1" pkg="brl_teleop_controller" type="phantom_multi_controller" output="screen">
 		<param name="master1" value="true"	/>
 		<param name="popc_enable" value="true"	/>
-		<param name="time_delay" value="1"	/>
+		<param name="time_delay" value="100"	/>
 
 		<param name="force_master_master_src_name" value="/MMSS_master2" />
     	<param name="force_master_master_topic_name" value="force_master_master" />

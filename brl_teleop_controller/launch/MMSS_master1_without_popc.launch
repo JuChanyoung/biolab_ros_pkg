@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+	<include file="$(find brl_teleop_phantom)/launch/MMSS_phantom_master1.launch" />
+	<node name="MMSS_master1" pkg="brl_teleop_controller" type="phantom_multi_controller" output="screen">
+		<param name="master1" value="true"	/>
+		<param name="popc_enable" value="false"	/>
+		<param name="time_delay" value="100"	/>
+
+		<param name="force_master_master_src_name" value="/MMSS_master2" />
+    	<param name="force_master_master_topic_name" value="force_master_master" />
+		
+		<param name="force_slave_master_src_name" value="/MMSS_slave" />
+    	<param name="force_slave_master_topic_name" value="force_slave_master1" />
+
+    	<param name="actual_velocity_src_name" value="/phantom_master1" />
+    	<param name="actual_velocity_topic_name" value="velocity" />
+
+	</node>
+</launch>
+

@@ -1,0 +1,17 @@
+<package>
+  <description brief="brl_teleop_p3dx">
+
+     brl_teleop_p3dx
+
+  </description>
+  <author>haquang</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/brl_teleop_p3dx</url>
+  <depend package="brl_teleop_msgs"/>
+  <depend package="Aria"/>
+  <depend package="roscpp"/>
+
+</package>
+
+

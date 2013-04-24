@@ -24,61 +24,59 @@
 #include <functional>
 #include <algorithm>
 #include <stdlib.h>
-#include <vector>
 #include <fstream>
-//-------------- Haptic device----------//
-#include <HD/hd.h>
-#include <HDU/hduError.h>
-#include <HDU/hduVector.h>
-
+#include <boost/array.hpp>
+// ------------------------------------ //
 const int32_t PUBLISH_RATE = 1000; // 1kHz
 const int32_t TIME_DELAY = 1;	// No time delay
 FILE *data;
+
+typedef boost::array<double,3> vector3D;
 
 class controller
 {
 public:
 	// Variable
-
 	bool master1_;									//  Master 1 Controller
 	bool master2_;									//  Master 2 Controller
 	bool slave_;									//	Slave Controller
 	bool popc_enable_;
-
-	// Device Variables
-	hduVector3Dd velocity_actual_;					//	Actual Velocity
-	hduVector3Dd position_actual_;					// 	Actual Position
-	hduVector3Dd velocity_design_;					//	Actual Velocity
-	// Communication variables
-	hduVector3Dd master1_velocity_;					// 	Velocity of Master 1 
-	hduVector3Dd master2_velocity_;					//	Velocity of Master 2
-	hduVector3Dd position_design_;					//	Design Position
-	hduVector3Dd force_ctrl_;						// 	Control force (in case of slave/master 2 device)
-	hduVector3Dd force_feedback_master_;			// 	Force feedback from master
-	hduVector3Dd force_feedback_slave_;				//	Force feebdack from slave
-	hduVector3Dd force_ctrl_popc_;					//	Force after PoPc
-	hduVector3Dd force_feedback_master_popc_;		// 	Force feedback from master
-	hduVector3Dd force_feedback_slave_popc_;		//	Force feebdack from slave
+	float alpha_;									//	Scale
 	
-	hduVector3Dd energy_reference_master_;			//	Reference Energy
-	hduVector3Dd energy_reference_slave_;			//	Reference Energy
-	hduVector3Dd energy_reference_master1_;			//	Reference Energy
-	hduVector3Dd energy_reference_master2_;			//	Reference Energy
+	// Device Variables
+	vector3D velocity_actual_;					//	Actual Velocity
+	vector3D position_actual_;					// 	Actual Position
+	vector3D velocity_desired_;					//	Desired Velocity
+	// Communication variables
+	vector3D master1_velocity_;					// 	Velocity of Master 1 
+	vector3D master2_velocity_;					//	Velocity of Master 2
+	vector3D position_desire_;					//	Design Position
+	vector3D force_ctrl_;						// 	Control force (in case of slave/master 2 device)
+	vector3D force_feedback_master_;			// 	Force feedback from master
+	vector3D force_feedback_slave_;				//	Force feebdack from slave
+	vector3D force_ctrl_popc_;					//	Force after PoPc
+	vector3D force_feedback_master_popc_;		// 	Force feedback from master
+	vector3D force_feedback_slave_popc_;		//	Force feebdack from slave
+	
+	vector3D energy_reference_master_;			//	Reference Energy
+	vector3D energy_reference_slave_;			//	Reference Energy
+	vector3D energy_reference_master1_;			//	Reference Energy
+	vector3D energy_reference_master2_;			//	Reference Energy
 
-	hduVector3Dd energy_mst_mst_input_;				//	Energy input from master to master
-	hduVector3Dd energy_mst_mst_output_;			//	Energy output from master to master
-	hduVector3Dd energy_mst_slv_intput_;			//	Energy input from master to slave
-	hduVector3Dd energy_mst1_slv_output_;			//	Energy output from master 1 to slave
-	hduVector3Dd energy_mst2_slv_output_;			//	Energy output from master 2 to slave
-	hduVector3Dd energy_slv_mst1_input_;			//	Energy input from slave to master 1
-	hduVector3Dd energy_slv_mst2_input_;			//	Energy int from slave to master 2
-	hduVector3Dd energy_slv_mst_output_;			//	Energy output from slave to master
-	hduVector3Dd force_to_device_;
+	vector3D energy_mst_mst_input_;				//	Energy input from master to master
+	vector3D energy_mst_mst_output_;			//	Energy output from master to master
+	vector3D energy_mst_slv_intput_;			//	Energy input from master to slave
+	vector3D energy_mst1_slv_output_;			//	Energy output from master 1 to slave
+	vector3D energy_mst2_slv_output_;			//	Energy output from master 2 to slave
+	vector3D energy_slv_mst1_input_;			//	Energy input from slave to master 1
+	vector3D energy_slv_mst2_input_;			//	Energy int from slave to master 2
+	vector3D energy_slv_mst_output_;			//	Energy output from slave to master
+	vector3D force_to_device_;
 	// Ros variables
 	ros::NodeHandlePtr node_;
 	int32_t publish_rate_;
 	int32_t time_delay_;
-	// Subsriber
+	// Subscriber
 	std::string actual_velocity_src_name_;
 	std::string actual_velocity_topic_name_;
 
@@ -112,7 +110,7 @@ public:
 	ros::Publisher force_slave_master1_pub_;
 	ros::Publisher force_slave_master2_pub_;
 
-	ros::Publisher force_popc_pub_;		// To device
+	ros::Publisher force_popc_pub_;		
 	
 	// Delay variable
 	brl_teleop_msgs::Package* pkg_mst_mst_;		//	From master to master
@@ -126,9 +124,9 @@ public:
 	// Mass - Spring - Damper
 	double K_master_; // Mass - Spring - Damper
 	double Mss_;
-	hduVector3Dd Acc_;	// Acceleration
-	hduVector3Dd Vm_;	// Velocity
-	hduVector3Dd Xm_;	// Position
+	vector3D Acc_;	// Acceleration
+	vector3D Vm_;	// Velocity
+	vector3D Xm_;	// Position
 
 	double curTime_;
 	double prvTime_;
@@ -143,9 +141,7 @@ public:
 		slave_ = false;
 		popc_enable_=false;
 
-		Acc_.set(0.0f,0.0f,0.0f);
-		Vm_.set(0.0f,0.0f,0.0f);
-		Xm_.set(0.0f,0.0f,0.0f);
+		alpha_ = 0.5;
 
 		K_master_ = 1;
 		Mss_ = 0.0001;
@@ -162,9 +158,9 @@ public:
 		pkg_slv_mst1_ = new brl_teleop_msgs::Package[time_delay_];
 		pkg_slv_mst2_ = new brl_teleop_msgs::Package[time_delay_];
 	}
-
-	void MassSpringDamper(hduVector3Dd &force,const hduVector3Dd &pos,const hduVector3Dd &vel)
+	void MassSpringDamper(vector3D &force,const vector3D &pos,const vector3D &vel)
 	{
+		// This is the filter to remove high frequency noise in force control
 		for (int i = 0;i < 3; i++)
 		{
 			Acc_[i]  = (-K_master_*(Xm_[i] - pos[i]) - beta_*(Vm_[i] - vel[i]/dT_) + force[i])/Mss_;
@@ -176,6 +172,7 @@ public:
 
 	double PdCompute(const double &Xr, const double &X,const double &velocity,const double &Kp,const double &Kd)
 	{
+		// Simple PD controller
 		double pdVal,error;
 		error = Xr - X; 
 		pdVal = Kp*error - Kd*velocity;
@@ -183,38 +180,50 @@ public:
 	}
 	void actualVelocityCallback(const brl_teleop_msgs::VelConstPtr& msg)
 	{
-		velocity_actual_[0] = msg->deltaX; 		// Actual velocity
-		velocity_actual_[1] = msg->deltaY;		// Actual velocity
-		velocity_actual_[2] = msg->deltaZ;		// Actual velocity
+		// This is the callback function which subscribing for actual velocity of device
+		velocity_actual_[0] = msg->deltaX; 		
+		velocity_actual_[1] = msg->deltaY;		
+		velocity_actual_[2] = msg->deltaZ;		
 
+		//	Velocity is then integrated to be position
 		position_actual_[0] += velocity_actual_[0];
 		position_actual_[1] += velocity_actual_[1];
 		position_actual_[2] += velocity_actual_[2];
 
+		//	In case of PoPc algorithm isn't used
+		if (!popc_enable_)
+			for (int i = 0; i < 3; ++i)
+				Vm_[i] = velocity_actual_[i] / dT_;
+
+		//	Calculating input energy at master side
 		if ((master1_ || master2_))
 		{
 			for (int i=0;i<3;i++)
 			{
 				if (master1_)
 				{
+					// 	Input energy for master -> master channel
 					if (Vm_[i] * force_feedback_master_[i] < 0)
 						energy_mst_mst_input_[i] -= Vm_[i] * force_feedback_master_[i]*dT_;	
 				}
 				
+					//	Input energy for master -> slave channel
 				if (Vm_[i] * force_feedback_slave_[i] < 0)
-					energy_mst_slv_intput_[i] -= Vm_[i] * force_feedback_slave_[i]*dT_;
+					energy_mst_slv_intput_[i] -= alpha_*Vm_[i] * force_feedback_slave_[i]*dT_;
 			}
 		}
 	}
 	void velocityMasterToMasterCallback(const brl_teleop_msgs::PackageConstPtr& pkg)
 	{
-		velocity_design_[0] = pkg->x;
-		velocity_design_[1] = pkg->y;
-		velocity_design_[2] = pkg->z;
+		//	This is the callback funtion which subscribing for the velocity command
+		//	from master 1 to master 2
+		velocity_desired_[0] = pkg->x;
+		velocity_desired_[1] = pkg->y;
+		velocity_desired_[2] = pkg->z;
 
-		position_design_[0] += velocity_design_[0];
-		position_design_[1] += velocity_design_[1];
-		position_design_[2] += velocity_design_[2];
+		position_desire_[0] += velocity_desired_[0];
+		position_desire_[1] += velocity_desired_[1];
+		position_desire_[2] += velocity_desired_[2];
 
 		energy_reference_master_[0] = pkg->Ex;
 		energy_reference_master_[1] = pkg->Ey;
@@ -222,27 +231,28 @@ public:
 
 		for (int i = 0; i < 3; i++)
 		{
-			force_ctrl_[i] = PdCompute(position_design_[i],position_actual_[i],velocity_actual_[i],Kp_,Kd_);
+			// Control force is calculated by a PD controller
+			force_ctrl_[i] = PdCompute(position_desire_[i],position_actual_[i],velocity_actual_[i],Kp_,Kd_);
 
 			// Passivity Observer
-			if (force_ctrl_[i]*velocity_design_[i] < 0)
-				energy_mst_mst_input_[i] -= force_ctrl_[i] * velocity_design_[i];
-			if (force_ctrl_[i]*velocity_design_[i] > 0)
-				energy_mst_mst_output_[i] -= force_ctrl_[i] * velocity_design_[i];
+			if (force_ctrl_[i]*velocity_desired_[i] < 0)
+				energy_mst_mst_input_[i] -= force_ctrl_[i] * velocity_desired_[i];
+			if (force_ctrl_[i]*velocity_desired_[i] > 0)
+				energy_mst_mst_output_[i] -= force_ctrl_[i] * velocity_desired_[i];
 			// Passivity Controller
 			if (popc_enable_)
 			{
 				if ((energy_reference_master_[i] + energy_mst_mst_output_[i]<0) && (force_ctrl_[i]!=0))
 				{
 					// Backward 1 step
-					energy_mst_mst_output_[i] += force_ctrl_[i] * velocity_design_[i];
-					position_design_[i] -= velocity_design_[i];
+					energy_mst_mst_output_[i] += force_ctrl_[i] * velocity_desired_[i];
+					position_desire_[i] -= velocity_desired_[i];
 					// Modify veloctiy
-					velocity_design_[i] = (energy_reference_master_[i] + energy_mst_mst_output_[i])/force_ctrl_[i];
+					velocity_desired_[i] = (energy_reference_master_[i] + energy_mst_mst_output_[i])/force_ctrl_[i];
 					// Update 1 step
-					position_design_[i] += velocity_design_[i];	
-					force_ctrl_popc_[i] = PdCompute(position_design_[i],position_actual_[i],velocity_actual_[i],Kp_,Kd_);				
-					energy_mst_mst_output_[i] -= force_ctrl_popc_[i] * velocity_design_[i];
+					position_desire_[i] += velocity_desired_[i];	
+					force_ctrl_popc_[i] = PdCompute(position_desire_[i],position_actual_[i],velocity_actual_[i],Kp_,Kd_);				
+					energy_mst_mst_output_[i] -= force_ctrl_popc_[i] * velocity_desired_[i];
 				}
 				else
 					force_ctrl_popc_[i] = force_ctrl_[i];	
@@ -252,6 +262,7 @@ public:
 	
 	void forceMasterToMasterCallback(const brl_teleop_msgs::PackageConstPtr& pkg)
 	{
+		//	This is the callback function for the force feedback from master 2 to master 1
 		force_feedback_master_[0] = -pkg->fx;
 		force_feedback_master_[1] = -pkg->fy;
 		force_feedback_master_[2] = -pkg->fz;
@@ -280,19 +291,19 @@ public:
 				else
 					force_feedback_master_popc_[i] = force_feedback_master_[i];
 			}
-
 		}
 	}
 
 	void velocityMaster1ToSlaveCallback(const brl_teleop_msgs::PackageConstPtr& pkg)
 	{
-		master1_velocity_[0] = 0.5*pkg->x;
-		master1_velocity_[1] = 0.5*pkg->y;
-		master1_velocity_[2] = 0.5*pkg->z;
+		//	This is the calback function for velocity command from master 1 to slave
+		master1_velocity_[0] = alpha_*pkg->x;
+		master1_velocity_[1] = alpha_*pkg->y;
+		master1_velocity_[2] = alpha_*pkg->z;
 
-		position_design_[0] += master1_velocity_[0];
-		position_design_[1] += master1_velocity_[1];
-		position_design_[2] += master1_velocity_[2];
+		position_desire_[0] += master1_velocity_[0];
+		position_desire_[1] += master1_velocity_[1];
+		position_desire_[2] += master1_velocity_[2];
 
 		energy_reference_master1_[0] = pkg->Ex;
 		energy_reference_master1_[1] = pkg->Ey;
@@ -300,7 +311,7 @@ public:
 
 		for (int i = 0; i < 3; i++)
 		{
-			force_ctrl_[i] = PdCompute(position_design_[i],position_actual_[i],velocity_actual_[i],Kp_,Kd_);
+			force_ctrl_[i] = PdCompute(position_desire_[i],position_actual_[i],velocity_actual_[i],Kp_,Kd_);
 			//	Passivity Observer
 			if (force_ctrl_[i] * master1_velocity_[i] < 0)
 				energy_slv_mst1_input_[i] -= force_ctrl_[i] * master1_velocity_[i];
@@ -314,12 +325,12 @@ public:
 				{
 					//	Backward 1 step
 					energy_mst1_slv_output_[i] += force_ctrl_[i] * master1_velocity_[i];
-					position_design_[i] -= master1_velocity_[i];
+					position_desire_[i] -= master1_velocity_[i];
 					//	Velocity modification
 					master1_velocity_[i] = (energy_reference_master1_[i] + energy_mst1_slv_output_[i])/force_ctrl_[i];
 					//	Update 1 step
-					position_design_[i] += master1_velocity_[i];
-					force_ctrl_popc_[i] = PdCompute(position_design_[i],position_actual_[i],velocity_actual_[i],Kp_,Kd_);
+					position_desire_[i] += master1_velocity_[i];
+					force_ctrl_popc_[i] = PdCompute(position_desire_[i],position_actual_[i],velocity_actual_[i],Kp_,Kd_);
 					energy_mst1_slv_output_[i]-= force_ctrl_popc_[i] * master1_velocity_[i];
 				}
 				else
@@ -330,13 +341,14 @@ public:
 
 	void velocityMaster2ToSlaveCallback(const brl_teleop_msgs::PackageConstPtr& pkg)
 	{
-		master2_velocity_[0] = 0.5*pkg->x;
-		master2_velocity_[1] = 0.5*pkg->y;
-		master2_velocity_[2] = 0.5*pkg->z;
+		//	This is the calback function for velocity command from master 2 to slave
+		master2_velocity_[0] = alpha_*pkg->x;
+		master2_velocity_[1] = alpha_*pkg->y;
+		master2_velocity_[2] = alpha_*pkg->z;
 
-		position_design_[0] += master2_velocity_[0];
-		position_design_[1] += master2_velocity_[1];
-		position_design_[2] += master2_velocity_[2];
+		position_desire_[0] += master2_velocity_[0];
+		position_desire_[1] += master2_velocity_[1];
+		position_desire_[2] += master2_velocity_[2];
 
 		energy_reference_master2_[0] = pkg->Ex;
 		energy_reference_master2_[1] = pkg->Ey;
@@ -344,7 +356,7 @@ public:
 
 		for (int i = 0; i < 3; i++)
 		{
-			force_ctrl_[i] = PdCompute(position_design_[i],position_actual_[i],velocity_actual_[i],Kp_,Kd_);
+			force_ctrl_[i] = PdCompute(position_desire_[i],position_actual_[i],velocity_actual_[i],Kp_,Kd_);
 			//	Passivity Observer
 			if (force_ctrl_[i] * master2_velocity_[i] < 0)
 				energy_slv_mst2_input_[i] -= force_ctrl_[i] * master2_velocity_[i];
@@ -358,12 +370,12 @@ public:
 				{
 					//	Backward 1 step
 					energy_mst2_slv_output_[i]+= force_ctrl_[i] * master2_velocity_[i];
-					position_design_[i] -= master2_velocity_[i];
+					position_desire_[i] -= master2_velocity_[i];
 					//	Velocity modification
 					master2_velocity_[i] = (energy_reference_master2_[i] + energy_mst2_slv_output_[i])/force_ctrl_[i];
 					//	Update 1 step
-					position_design_[i] += master2_velocity_[i];
-					force_ctrl_popc_[i] = PdCompute(position_design_[i],position_actual_[i],velocity_actual_[i],Kp_,Kd_);
+					position_desire_[i] += master2_velocity_[i];
+					force_ctrl_popc_[i] = PdCompute(position_desire_[i],position_actual_[i],velocity_actual_[i],Kp_,Kd_);
 					energy_mst2_slv_output_[i]-= force_ctrl_popc_[i] * master2_velocity_[i];
 				}
 				else
@@ -373,7 +385,7 @@ public:
 	}
 	void forceSlaveToMasterCallback(const brl_teleop_msgs::PackageConstPtr& pkg)
 	{
-
+		//	This is the calback function for force feedback from slave to master1/master2 
 		force_feedback_slave_[0] = -pkg->fx;
 		force_feedback_slave_[1] = -pkg->fy;
 		force_feedback_slave_[2] = -pkg->fz;
@@ -386,18 +398,18 @@ public:
 		{
 			//	Passivity Observer
 			if (force_feedback_slave_[i] * Vm_[i] > 0)
-				energy_slv_mst_output_[i] -= force_feedback_slave_[i] * Vm_[i]*dT_;
+				energy_slv_mst_output_[i] -= alpha_*force_feedback_slave_[i] * Vm_[i]*dT_;
 			//	Passivity Controller
 			if (popc_enable_)
 			{
 				if ((energy_reference_slave_[i] + energy_slv_mst_output_[i] < 0) && (Vm_[i]!=0))
 				{
 					//	Backward 1 step
-					energy_slv_mst_output_[i] += force_feedback_slave_[i] * Vm_[i]*dT_;
+					energy_slv_mst_output_[i] += alpha_*force_feedback_slave_[i] * Vm_[i]*dT_;
 					//	Force modification
-					force_feedback_slave_popc_[i] = (energy_reference_slave_[i] + energy_slv_mst_output_[i])/(Vm_[i]*dT_);
+					force_feedback_slave_popc_[i] = (energy_reference_slave_[i] + energy_slv_mst_output_[i])/(alpha_*Vm_[i]*dT_);
 					//	Update
-					energy_slv_mst_output_[i] -= force_feedback_slave_popc_[i] * Vm_[i]*dT_;
+					energy_slv_mst_output_[i] -= alpha_*force_feedback_slave_popc_[i] * Vm_[i]*dT_;
 				}
 				else
 					force_feedback_slave_popc_[i] = force_feedback_slave_[i];
@@ -407,6 +419,7 @@ public:
 
 	void make_delay()
 	{
+		// For experiment, artificial time delay is introduced.
 		int32_t i;
 		if (master1_||master2_)
 		{
@@ -466,9 +479,9 @@ public:
 				pkg_slv_mst2_[time_delay_-1].Ey = energy_slv_mst2_input_[1];
 				pkg_slv_mst2_[time_delay_-1].Ez = energy_slv_mst2_input_[2];
 		}
-
 	}
 	
+	// Publishing function
 	void velocityMasterToMasterPublish()
 	{
 		pkg_mst_mst_[0].header.frame_id = ros::this_node::getName();
@@ -510,6 +523,7 @@ public:
 	}
 	void forceToDevice()
 	{
+		//  This is the funtion to publish force to device nodes.
 		brl_teleop_msgs::Package pkg_out;
 
 		pkg_out.header.frame_id = ros::this_node::getName();
@@ -518,22 +532,41 @@ public:
 		if (popc_enable_)
 		{
 			if (master1_)
-				force_to_device_ = force_feedback_master_popc_+ force_feedback_slave_popc_;
+			{
+				force_to_device_[0] = force_feedback_master_popc_[0]+ force_feedback_slave_popc_[0];
+				force_to_device_[1] = force_feedback_master_popc_[1]+ force_feedback_slave_popc_[1];
+				force_to_device_[2] = force_feedback_master_popc_[2]+ force_feedback_slave_popc_[2];
+			}
 			if (master2_)
-				force_to_device_ = force_ctrl_popc_+force_feedback_slave_popc_;
+				{
+					force_to_device_[0] = force_ctrl_popc_[0]+force_feedback_slave_popc_[0];
+					force_to_device_[1] = force_ctrl_popc_[1]+force_feedback_slave_popc_[1];
+					force_to_device_[2] = force_ctrl_popc_[2]+force_feedback_slave_popc_[2];
+				}
 			if (slave_)
 				force_to_device_ = force_ctrl_popc_;
-
+			
 			MassSpringDamper(force_to_device_,position_actual_,velocity_actual_);
+			
+			force_to_device_[2] = 0.1*(0 - position_actual_[2]);	
+			force_to_device_[0] = 0.1*(0 - position_actual_[0]);
 		}
 		else
 		{
 			if (master1_)
-				force_to_device_ = force_feedback_master_+force_feedback_slave_; 
+			{
+				force_to_device_[0] = force_feedback_master_[0] + force_feedback_slave_[0]; 
+				force_to_device_[1] = force_feedback_master_[1] + force_feedback_slave_[1];
+				force_to_device_[2] = force_feedback_master_[2] + force_feedback_slave_[2];
+			}
 
 			if (master2_)
-				force_to_device_ = force_ctrl_+force_feedback_slave_;
-	
+			{
+				force_to_device_[0] = force_ctrl_[0] + force_feedback_slave_[0];
+				force_to_device_[1] = force_ctrl_[1] + force_feedback_slave_[1];
+				force_to_device_[2] = force_ctrl_[2] + force_feedback_slave_[2];
+			}
+
 			if (slave_)
 				force_to_device_ = force_ctrl_;
 		}
@@ -542,10 +575,13 @@ public:
 		pkg_out.fy  = force_to_device_[1];
 		pkg_out.fz  = force_to_device_[2];	
 
-		force_popc_pub_.publish(pkg_out);	
+		force_popc_pub_.publish(pkg_out);
 	}
 	void init()
 	{
+		/*
+		This is the initialize funtion to load configuration parameters from launch file
+		*/
 		// Ros Node
 		node_ = ros::NodeHandlePtr(new ros::NodeHandle("~"));
 			std::cout << "Starting with the following parameters:" << std::endl;
@@ -642,8 +678,6 @@ public:
 		force_slave_master2_pub_ = node_->advertise<brl_teleop_msgs::Package>("force_slave_master2", 100);
 		
 		force_popc_pub_ = node_->advertise<brl_teleop_msgs::Package>("force_popc", 100);
-
-		
 	}
 };
 
@@ -680,47 +714,7 @@ void *ros_publish(void *ptr)
 		   	Controller->forceSlaveToMaster2Publish();
 		 	Controller->forceToDevice();  	
 	   }
-
-
-	   	// fprintf(data,"%.3f %.3f %.3f %.3f %.3f %.3f\n",Controller->energy_reference_[0],Controller->energy_output_[0],
-	    			// Controller->energy_reference_[1],Controller->energy_output_[1],
-	    			// Controller->energy_reference_[2],Controller->energy_output_[2]);
-	 	if (Controller->master1_ || Controller->master2_)
-	 		fprintf(data,"%.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f\n",
-	 										Controller->force_to_device_[0],
-	 										Controller->force_to_device_[1],
-	 										Controller->force_to_device_[2],
-	 										Controller->energy_reference_master_[0],
-	 										Controller->energy_reference_master_[1],
-	 										Controller->energy_reference_master_[2],
-	 										Controller->energy_mst_mst_output_[0],
-	 										Controller->energy_mst_mst_output_[1],
-	 										Controller->energy_mst_mst_output_[2],
-	 										Controller->energy_reference_slave_[0],
-	 										Controller->energy_reference_slave_[1],
-	 										Controller->energy_reference_slave_[2],
-	 										Controller->energy_slv_mst_output_[0],
-	 										Controller->energy_slv_mst_output_[1],
-	 										Controller->energy_slv_mst_output_[2]);
-	 										
-	 	if (Controller->slave_)
-	 		fprintf(data,"%.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f\n",
-	 										Controller->force_to_device_[0],
-	 										Controller->force_to_device_[1],
-	 										Controller->force_to_device_[2],
-	 										Controller->energy_reference_master1_[0],
-	 										Controller->energy_reference_master1_[1],
-	 										Controller->energy_reference_master1_[2],
-	 										Controller->energy_mst1_slv_output_[0],
-	 										Controller->energy_mst1_slv_output_[1],
-	 										Controller->energy_mst1_slv_output_[2],
-	 										Controller->energy_reference_master2_[0],
-	 										Controller->energy_reference_master2_[1],
-	 										Controller->energy_reference_master2_[2],
-	 										Controller->energy_mst2_slv_output_[0],
-	 										Controller->energy_mst2_slv_output_[1],
-	 										Controller->energy_mst2_slv_output_[2]);
-       loop_rate.sleep();
+	   loop_rate.sleep();
    }
    fclose(data);
    return NULL;
@@ -731,25 +725,11 @@ int main(int argc, char** argv)
 {
 	//-- Init ROS node
 	ros::init(argc, argv, "controller");
-
 	controller Controller;
-
-	// data file
-	data = fopen("/home/biolab/fuerte_workspace/sandbox/brl_teleop_controller/src/data.txt","w");
-
-	if (data!=NULL)
-	{
-		std::cout << "\t" << "Created file success "<< std::endl;
-	}
-	else
-	{
-		std::cout << "\t" << "Fail to create file "<< std::endl;
-	}
 	//-- Threads
 	pthread_t publish_thread;
 	pthread_create(&publish_thread,NULL,ros_publish,(void*) &Controller);
 	pthread_join(publish_thread,NULL);
-
 
 	ROS_INFO("Ending Session...\n");
 }

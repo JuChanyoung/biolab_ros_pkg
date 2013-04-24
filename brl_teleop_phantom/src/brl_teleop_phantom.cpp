@@ -3,7 +3,7 @@
 // Author      : Haquang
 // Version     : 1.0
 // Copyright   : Your copyright notice
-// Description : This node control phantom device, subscribe to /force topic and
+// Description : This is the driver of phantom device, subscribe to /force topic and
 //				 publish /velocity topic (displacement)
 //============================================================================
 
@@ -23,6 +23,12 @@
 #include <HDU/hduError.h>
 #include <HDU/hduVector.h>
 
+// Standard 
+#include <vector>
+
+using namespace std;
+
+// -------------------------------------
 const int32_t PUBLISH_RATE = 1000; // 1 kHz
 
 //------------- Phantom Device -------

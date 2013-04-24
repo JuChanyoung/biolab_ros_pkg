@@ -28,9 +28,10 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
+
 rosbuild_add_executable(phantom_single_controller src/phantom_single_controller.cpp)
 target_link_libraries(phantom_single_controller HDU HD rt ncurses)
 
 rosbuild_add_executable(phantom_multi_controller src/phantom_multi_controller.cpp)
-target_link_libraries(phantom_single_controller HDU HD rt ncurses)
 
+rosbuild_add_executable(mobile_robot_multi_controller src/mobile_robot_multi_controller.cpp)

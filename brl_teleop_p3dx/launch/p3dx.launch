@@ -1,0 +1,6 @@
+<launch>
+	<node name="p3dx" pkg="brl_teleop_p3dx" type="P3Dx" output="screen">
+		<param name="desire_velocity_src_name" value="/MMSS_slave" />
+   		<param name="desire_velocity_topic_name" value="desire_velocity" />
+	</node>
+</launch>
